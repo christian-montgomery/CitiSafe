@@ -1,13 +1,13 @@
 from fastapi import APIRouter, UploadFile
 from App.Services.Inference.object_detection import detect_objects
 from App.Services.Inference.depth_estimation import estimate_depth
-from App.Services.Inference.aggregate_hazard_score import aggregate_hazard_scores
-from App.Services.Inference.captioniong import generate_caption
+from App.Services.Inference.aggregate_hazard_score import compute_aggregate_hazard_score
+from App.Services.Inference.captioning import generate_caption
 from App.Services.Inference.fire_classifier import detect_fire
 
-router = APIRouter(tags=["Upload / Analysis"])
+router = APIRouter(tags=["Hazard Analysis"])
 
-@router.post("/upload")
+@router.post("/analysis")
 async def upload_image(file: UploadFile = file(...)):
     """
     Upload an image for hazard analysis.
@@ -35,10 +35,9 @@ async def upload_image(file: UploadFile = file(...)):
     }
 
     # Aggregate hazard scores
-    severity = aggregate_hazard_scores(hazards)
+    severity = compute_aggregate_hazard_score(hazards)
 
     return {
         "hazards": hazards,
-        "severity_score": severity,
-        "description": caption
+        "severity": severity
     }

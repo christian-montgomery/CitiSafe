@@ -8,16 +8,20 @@ def compute_aggregate_hazard_score(hazards):
     Returns:
     float: The aggregate hazard score.
     """
-    score = 0
+    score = 0.0
 
-    if hazards["flood_depth_estimate"] >.15:
-        score += .4
+    # Flood weighting 0.4 max
+    flood_depth = hazards.get("flood_depth_estimate", 0)
+    if flood_depth >= 0.15: score += 0.2
+    if flood_depth >= 0.25: score += 0.2
         
-    score += hazards["fire_probability"] * .4
+    # Fire weighting 0.4 max
+    fire_prob = hazards.get("fire_probability", 0)
+    score += min(fire_prob * 0.4, 0.4)
     
-    obj_labels = [obj['label'] for obj in hazards['objects']]
-    if 'car' in obj_labels and 'person' in obj_labels:
-        score += .2
-        
+    # Accident detection weighting 0.2 max
+    labels = [obj['label'].lower() for obj in hazards.get("objects", [])]
+    if "car" in labels and "person" in labels:
+        score += 0.2
 
     return min(score, 1.0)

@@ -1,16 +1,17 @@
 from fastapi import FastAPI
-from App.Routers import upload, cameras, hazards, routing
+from App.Routers.hazards import router as hazards_router
+from App.Db.database import Base, engine
+from App.Models import hazard
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title = "CitiSafe API",
-    description = "Real-time multi-modal hazard detection service",
+    title="CitiSafe API",
+    version="0.1.0"
 )
 
-app.include_router(upload.router, prefix="/api")
-app.include_router(cameras.router, prefix="/api")
-app.include_router(hazards.router, prefix="/api")
-app.include_router(routing.router, prefix="/api")
+app.include_router(hazards_router)
 
-app.get("/")
+@app.get("/")
 def root():
-    return {"message": "CitiSafe API running"}
+    return {"message": "CitiSafe backend is running"}

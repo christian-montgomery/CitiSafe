@@ -1,11 +1,12 @@
 from transformers import DetrForObjectDetection, DetrImageProcessor
 from PIL import Image
 import io
+import torch
 
 processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-101")
 model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-101")
 
-def detect_objects(image_bytes):
+def detect_objects(image_bytes, threshold=0.7):
     """
     Perform object detection on the input image bytes.
 
@@ -20,8 +21,10 @@ def detect_objects(image_bytes):
     outputs = model(**inputs)
 
     # Post-process the outputs to get the detected objects
-    target_sizes = [image.size[::-1]]
-    results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=0.7)[0]
+    target_sizes = torch.tensor([image.size[::-1]])
+    results = processor.post_process_object_detection(
+        outputs, target_sizes=target_sizes, threshold=threshold
+        )[0]
 
     detected_objects = []
     for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
